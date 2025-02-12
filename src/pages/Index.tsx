@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { ImageUploader } from "@/components/ImageUploader";
+import { TryOnCanvas } from "@/components/TryOnCanvas";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -13,13 +14,13 @@ const Index = () => {
       toast.error("Please upload both photos first");
       return;
     }
-    toast("AI processing will be implemented in the next iteration!");
+    toast.success("Images loaded into canvas!");
   };
 
   return (
     <div className="min-h-screen bg-background">
       <main className="container py-12 animate-fade-in">
-        <div className="max-w-3xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
               AI Fashion Revolution
@@ -50,6 +51,12 @@ const Index = () => {
               Try On
             </Button>
           </div>
+
+          {(userPhoto || clothingPhoto) && (
+            <div className="animate-fade-up" style={{ "--delay": "600ms" } as any}>
+              <TryOnCanvas userPhoto={userPhoto} clothingPhoto={clothingPhoto} />
+            </div>
+          )}
         </div>
       </main>
     </div>
