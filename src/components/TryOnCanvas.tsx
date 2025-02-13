@@ -41,8 +41,7 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
     reader.onload = (e) => {
       if (!e.target?.result) return;
 
-      const imageUrl = e.target.result as string;
-      new FabricImage.fromURL(imageUrl, (img) => {
+      FabricImage.fromURL(e.target.result as string, (img) => {
         const canvasWidth = canvas.getWidth();
         const canvasHeight = canvas.getHeight();
         const imgAspectRatio = img.width! / img.height!;
@@ -59,7 +58,8 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
           scaleY = canvasHeight / img.height!;
         }
 
-        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+        canvas.backgroundImage = img;
+        img.set({
           scaleX,
           scaleY,
           originX: 'center',
@@ -67,6 +67,7 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
           left: canvasWidth / 2,
           top: canvasHeight / 2
         });
+        canvas.renderAll();
       });
     };
     reader.readAsDataURL(userPhoto);
@@ -108,6 +109,8 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
         canvas.renderAll();
         
         toast.success("Drag and resize the clothing to fit!");
+      }, {
+        crossOrigin: 'anonymous' // Add CORS header
       });
     };
     reader.readAsDataURL(clothingPhoto);
