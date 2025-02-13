@@ -44,7 +44,6 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
       // Using the correct method signature for Fabric.js v6
       FabricImage.fromURL(e.target.result as string, {
         crossOrigin: 'anonymous',
-        objectCaching: false,
         onImageCreated: (img) => {
           const canvasWidth = canvas.getWidth();
           const canvasHeight = canvas.getHeight();
@@ -88,7 +87,6 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
       // Using the correct method signature for Fabric.js v6
       FabricImage.fromURL(e.target.result as string, {
         crossOrigin: 'anonymous',
-        objectCaching: false,
         onImageCreated: (img) => {
           // Make the image draggable and resizable
           img.set({
