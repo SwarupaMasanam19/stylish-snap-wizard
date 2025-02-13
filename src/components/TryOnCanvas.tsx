@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { Canvas as FabricCanvas } from "fabric";
+import { Canvas as FabricCanvas, Image as FabricImage } from "fabric";
 import { Card } from "./ui/card";
 import { toast } from "sonner";
 
@@ -22,6 +22,11 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
       backgroundColor: "#ffffff",
     });
 
+    // Enable object controls
+    fabricCanvas.on('object:modified', () => {
+      fabricCanvas.renderAll();
+    });
+
     setCanvas(fabricCanvas);
 
     return () => {
@@ -34,14 +39,35 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const img = document.createElement("img");
-      img.src = e.target?.result as string;
-      img.onload = () => {
-        canvas.setBackgroundImage(img.src, canvas.renderAll.bind(canvas), {
-          scaleX: canvas.width! / img.width,
-          scaleY: canvas.height! / img.height,
+      if (!e.target?.result) return;
+
+      const imageUrl = e.target.result as string;
+      new FabricImage.fromURL(imageUrl, (img) => {
+        const canvasWidth = canvas.getWidth();
+        const canvasHeight = canvas.getHeight();
+        const imgAspectRatio = img.width! / img.height!;
+        const canvasAspectRatio = canvasWidth / canvasHeight;
+
+        let scaleX = 1;
+        let scaleY = 1;
+
+        if (imgAspectRatio > canvasAspectRatio) {
+          scaleX = canvasWidth / img.width!;
+          scaleY = canvasWidth / img.width!;
+        } else {
+          scaleX = canvasHeight / img.height!;
+          scaleY = canvasHeight / img.height!;
+        }
+
+        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+          scaleX,
+          scaleY,
+          originX: 'center',
+          originY: 'center',
+          left: canvasWidth / 2,
+          top: canvasHeight / 2
         });
-      };
+      });
     };
     reader.readAsDataURL(userPhoto);
   }, [userPhoto, canvas]);
@@ -51,13 +77,25 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      fabric.Image.fromURL(e.target?.result as string, (img) => {
+      if (!e.target?.result) return;
+
+      FabricImage.fromURL(e.target.result as string, (img) => {
         // Make the image draggable and resizable
         img.set({
-          left: 100,
-          top: 100,
+          left: canvas.getWidth() / 2,
+          top: canvas.getHeight() / 2,
+          originX: 'center',
+          originY: 'center',
           scaleX: 0.5,
           scaleY: 0.5,
+          cornerStyle: 'circle',
+          transparentCorners: false,
+          cornerColor: '#ffffff',
+          cornerStrokeColor: '#000000',
+          borderColor: '#000000',
+          cornerSize: 12,
+          padding: 10,
+          borderDashArray: [4, 4]
         });
         
         // Remove any existing clothing images
@@ -69,7 +107,7 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
         canvas.setActiveObject(img);
         canvas.renderAll();
         
-        toast.success("Clothing overlay added! You can now drag and resize it.");
+        toast.success("Drag and resize the clothing to fit!");
       });
     };
     reader.readAsDataURL(clothingPhoto);
@@ -77,7 +115,10 @@ export const TryOnCanvas = ({ userPhoto, clothingPhoto }: TryOnCanvasProps) => {
 
   return (
     <Card className="p-4 w-full flex justify-center">
-      <canvas ref={canvasRef} className="max-w-full touch-none" />
+      <canvas 
+        ref={canvasRef} 
+        className="max-w-full touch-none rounded-lg shadow-lg border border-border/10" 
+      />
     </Card>
   );
 };
